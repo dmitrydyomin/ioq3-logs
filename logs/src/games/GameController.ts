@@ -1,4 +1,5 @@
 import { Get, JsonController } from 'routing-controllers';
+
 import { GameRepository } from './GameRepository';
 
 @JsonController('/games')
@@ -12,6 +13,6 @@ export class GameController {
 
   @Get('/heatmap')
   getHeatmap() {
-    return [];
+    return this.repo.getHeatmap();
   }
 }

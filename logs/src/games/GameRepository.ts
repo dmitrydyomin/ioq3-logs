@@ -124,4 +124,26 @@ export class GameRepository {
       })
     );
   }
+
+  async getHeatmap() {
+    const startDate = new Date();
+    startDate.setHours(0, 0, 0, 0);
+    startDate.setFullYear(startDate.getFullYear() - 1);
+    const rows = await this.t()
+      .where({ show_in_stats: true })
+      .where('started_at', '>=', startDate)
+      .count('* as count')
+      .groupByRaw('DATE(started_at)')
+      .select<{ count: string; date: string }[]>(
+        this.db.knex.raw("TO_CHAR(DATE(started_at), 'YYYY-MM-DD') as date")
+      );
+    return {
+      startDate,
+      endDate: new Date(),
+      values: rows.map((r) => ({
+        count: parseInt(r.count),
+        date: r.date,
+      })),
+    };
+  }
 }

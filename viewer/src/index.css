@@ -12,3 +12,7 @@ th:first-child,
 td:first-child {
   text-align: left;
 }
+
+.heatmap {
+  width: 600px;
+}

@@ -8,3 +8,12 @@ export interface Game {
     score: number;
   }[];
 }
+
+export interface HeatmapData {
+  startDate: string;
+  endDate: string;
+  values: {
+    count: number;
+    date: string;
+  }[];
+}

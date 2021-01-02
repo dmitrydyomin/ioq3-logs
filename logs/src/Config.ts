@@ -8,6 +8,7 @@ export class Config {
   };
 
   client = {
+    enabled: process.env.CLIENT_DISABLED !== '1',
     host: 'quake',
     port: 3000,
   };
