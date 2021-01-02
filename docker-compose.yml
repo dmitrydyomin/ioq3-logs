@@ -1,0 +1,25 @@
+version: '3'
+services:
+  quake:
+    image: dmitrydyomin/ioq3
+    container_name: q3srv
+    command: +timelimit 10 +fraglimit 0 +map q3dm17
+    restart: unless-stopped
+    volumes:
+      - /Users/ddemin/Downloads/pak0.pk3:/pak0.pk3
+    ports:
+      - 27960:27960/udp
+  logs:
+    image: dmitrydyomin/ioq3-logs
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PASSWORD: '${DB_PASSWORD}'
+    networks:
+      - default
+      - db
+
+networks:
+  db:
+    external:
+      name: postgres_default
