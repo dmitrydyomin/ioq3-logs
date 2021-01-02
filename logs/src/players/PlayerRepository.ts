@@ -49,4 +49,12 @@ export class PlayerRepository {
       .returning('id');
     return this.findOne(id);
   }
+
+  async findAll() {
+    const rows = await this.t();
+    return rows.reduce(
+      (all, r) => ({ ...all, [r.id]: r }),
+      <Record<number, Player>>{}
+    );
+  }
 }

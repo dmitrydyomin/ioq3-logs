@@ -1,15 +1,16 @@
 import { NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 
+import { ClientGame, Game, GamePlayer } from './GameTypes';
 import { Db } from '../services/Db';
-import { Game, GamePlayer } from './GameTypes';
+import { PlayerRepository } from '../players/PlayerRepository';
 
 @Service()
 export class GameRepository {
   private table = 'games';
   private tablePlayers = 'game_players';
 
-  constructor(private db: Db) {}
+  constructor(private db: Db, private players: PlayerRepository) {}
 
   private t() {
     return this.db.knex<Game>(this.table);
@@ -31,6 +32,7 @@ export class GameRepository {
     const [id] = await this.t()
       .insert({
         started_at: new Date(),
+        show_in_stats: false,
       })
       .returning('id');
     return this.findOne(id);
@@ -40,7 +42,13 @@ export class GameRepository {
     await this.t().where({ id }).update({
       ended_at: new Date(),
     });
-    return this.findOne(id);
+    let saved = await this.findOne(id);
+    const players = await this.getGamePlayers([id]);
+    if (this.showInStats(saved, players[id])) {
+      await this.t().where({ id }).update({ show_in_stats: true });
+      saved = await this.findOne(id);
+    }
+    return saved;
   }
 
   async playerEnter(game_id: number, player_id: number) {
@@ -68,5 +76,52 @@ export class GameRepository {
 
   async subScore(game_id: number, player_id: number) {
     await this.tp().where({ game_id, player_id }).decrement('score');
+  }
+
+  private async getGamePlayers(gameIds: number[]) {
+    const rows = await this.tp().whereIn('game_id', gameIds);
+    return rows.reduce(
+      (all, r) => ({
+        ...all,
+        [r.game_id]: [...(all[r.game_id] || []), r],
+      }),
+      <Record<number, GamePlayer[]>>{}
+    );
+  }
+
+  private showInStats(game: Game, players: GamePlayer[]) {
+    if (!game.ended_at) {
+      return false;
+    }
+    const duration = game.ended_at.getTime() - game.started_at.getTime();
+    if (duration < 9 * 60 * 1000) {
+      return false;
+    }
+    const fp = players.filter(
+      (p) => p.entered_at.getTime() - game.started_at.getTime() < 10000
+    );
+    return fp.length > 1 && fp.some((p) => !p.left_at);
+  }
+
+  async getClientGames() {
+    const games = await this.t()
+      .where({ show_in_stats: true })
+      .orderBy('started_at', 'desc');
+
+    const gamePlayers = await this.getGamePlayers(games.map((g) => g.id));
+    const players = await this.players.findAll();
+
+    return games.map(
+      (g): ClientGame => ({
+        id: g.id,
+        started_at: g.started_at,
+        players: (gamePlayers[g.id] || []).map((gp) => ({
+          id: players[gp.player_id]?.id || 0,
+          name: players[gp.player_id]?.name || '',
+          model: players[gp.player_id]?.model || '',
+          score: gp.score,
+        })),
+      })
+    );
   }
 }
