@@ -17,6 +17,8 @@ body {
 table {
   border-collapse: collapse;
   margin: 1rem 0;
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
 }
 
 th,

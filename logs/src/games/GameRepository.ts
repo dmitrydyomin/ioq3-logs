@@ -106,6 +106,7 @@ export class GameRepository {
   async getClientGames() {
     const games = await this.t()
       .where({ show_in_stats: true })
+      .whereNotNull('ended_at')
       .orderBy('started_at', 'desc');
 
     const gamePlayers = await this.getGamePlayers(games.map((g) => g.id));
