@@ -49,7 +49,7 @@ export const Games: React.FC = () => {
         </thead>
         <tbody>
           {table.body.map((r, i) => (
-            <tr>
+            <tr key={i}>
               {r.map((c, j) => (
                 <td key={j}>{c}</td>
               ))}

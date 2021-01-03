@@ -125,21 +125,35 @@ export class GameRepository {
     );
   }
 
+  private weekStart(d: Date) {
+    const day = d.getDay();
+    const res = new Date(d.getTime());
+    res.setHours(0, 0, 0, 0);
+    res.setDate(res.getDate() - day + (day === 0 ? -6 : 1));
+    return res;
+  }
+
   async getHeatmap() {
-    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setHours(23, 59, 59, 999);
+
+    let startDate = new Date(endDate.getTime());
     startDate.setHours(0, 0, 0, 0);
-    startDate.setFullYear(startDate.getFullYear() - 1);
+    startDate.setDate(startDate.getDate() - 7 * 52);
+    startDate = this.weekStart(startDate);
+
     const rows = await this.t()
       .where({ show_in_stats: true })
       .where('started_at', '>=', startDate)
+      .where('started_at', '<=', endDate)
       .count('* as count')
       .groupByRaw('DATE(started_at)')
-      .select<{ count: string; date: string }[]>(
-        this.db.knex.raw("TO_CHAR(DATE(started_at), 'YYYY-MM-DD') as date")
+      .select<{ count: string; date: Date }[]>(
+        this.db.knex.raw('DATE(started_at) as date')
       );
     return {
       startDate,
-      endDate: new Date(),
+      endDate,
       values: rows.map((r) => ({
         count: parseInt(r.count),
         date: r.date,

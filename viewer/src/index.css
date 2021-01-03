@@ -1,5 +1,22 @@
+:root {
+  --color-bg-canvas: #fff;
+  --color-text-primary: #24292e;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial,
+    sans-serif, Apple Color Emoji, Segoe UI Emoji;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-canvas);
+
+  margin: 2rem 0;
+}
+
 table {
   border-collapse: collapse;
+  margin: 1rem 0;
 }
 
 th,
@@ -13,6 +30,7 @@ td:first-child {
   text-align: left;
 }
 
-.heatmap {
-  width: 600px;
+.app {
+  margin: auto;
+  max-width: 860px;
 }
