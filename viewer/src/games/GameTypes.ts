@@ -17,3 +17,12 @@ export interface HeatmapData {
     date: string;
   }[];
 }
+
+export interface TotalData {
+  players: {
+    id: number;
+    name: string;
+    icon?: string;
+    wins: number;
+  }[];
+}

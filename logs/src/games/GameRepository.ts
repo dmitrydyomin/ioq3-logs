@@ -2,6 +2,7 @@ import { NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 
 import { ClientGame, Game, GamePlayer } from './GameTypes';
+import { Config } from '../Config';
 import { Db } from '../services/Db';
 import { PlayerRepository } from '../players/PlayerRepository';
 
@@ -10,7 +11,11 @@ export class GameRepository {
   private table = 'games';
   private tablePlayers = 'game_players';
 
-  constructor(private db: Db, private players: PlayerRepository) {}
+  constructor(
+    private config: Config,
+    private db: Db,
+    private players: PlayerRepository
+  ) {}
 
   private t() {
     return this.db.knex<Game>(this.table);
@@ -159,6 +164,54 @@ export class GameRepository {
         count: parseInt(r.count),
         date: r.date,
       })),
+    };
+  }
+
+  async getTotals() {
+    const players = Object.values(await this.players.findAll());
+    players.sort((a, b) => a.id - b.id);
+
+    const dateFrom = new Date();
+    dateFrom.setHours(0, 0, 0, 0);
+    dateFrom.setDate(dateFrom.getDate() - 30);
+
+    const gameIds = await this.t().where({ show_in_stats: true }).pluck('id');
+    const rows = await this.tp()
+      .where('entered_at', '>=', dateFrom)
+      .whereIn('game_id', gameIds);
+    const byGame = rows.reduce(
+      (all, r) => ({ ...all, [r.game_id]: [...(all[r.game_id] || []), r] }),
+      <Record<number, GamePlayer[]>>{}
+    );
+    const scores = Object.values(byGame).map((players) => {
+      const p = [...players];
+      p.sort((a, b) => b.score - a.score);
+      return p[0].player_id;
+    });
+    const wins = scores.reduce(
+      (all, playerId) => ({
+        ...all,
+        [playerId]: (all[playerId] || 0) + 1,
+      }),
+      <Record<number, number>>{}
+    );
+
+    return {
+      players: players.map((p) => {
+        let icon: string | undefined;
+
+        if (this.config.players.useIcons) {
+          const [m1, m2] = p.model.split('/');
+          icon = `/icons/${m1}/icon_${m2 || 'default'}.png`;
+        }
+
+        return {
+          id: p.id,
+          name: p.name,
+          icon,
+          wins: wins[p.id] || 0,
+        };
+      }),
     };
   }
 }

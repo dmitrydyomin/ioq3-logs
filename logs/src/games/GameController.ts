@@ -15,4 +15,9 @@ export class GameController {
   getHeatmap() {
     return this.repo.getHeatmap();
   }
+
+  @Get('/totals')
+  getTotals() {
+    return this.repo.getTotals();
+  }
 }

@@ -1,0 +1,76 @@
+.totals {
+  --color-blue: #1056b6;
+  --color-red: #ed4748;
+
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+
+  margin: 1rem 0 1.5rem;
+}
+
+.icons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.icon-1 {
+  transform: scaleX(-1);
+}
+
+.score {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.score-0 {
+  display: flex;
+  flex-direction: row;
+}
+
+.score-1 {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.score-0 .wins {
+  color: var(--color-red);
+  margin-right: 0.3rem;
+}
+
+.score-1 .wins {
+  color: var(--color-blue);
+  margin-left: 0.3rem;
+}
+
+.score .wins {
+  font-weight: 600;
+  font-size: 50px;
+  line-height: 1;
+}
+
+.score .name {
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.bars {
+  display: flex;
+  flex-direction: row;
+  margin-top: 0.5rem;
+}
+
+.bar-0,
+.bar-1 {
+  height: 41px;
+}
+
+.bar-0 {
+  background-color: var(--color-red);
+}
+
+.bar-1 {
+  background-color: var(--color-blue);
+}

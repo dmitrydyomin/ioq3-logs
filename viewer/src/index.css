@@ -1,6 +1,7 @@
 :root {
   --color-bg-canvas: #fff;
   --color-text-primary: #24292e;
+  --color-border-primary: #e1e4e8;
 }
 
 body {
@@ -23,8 +24,9 @@ table {
 
 th,
 td {
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border-primary);
   text-align: right;
+  padding: 0 4px;
 }
 
 th:first-child,
@@ -34,5 +36,5 @@ td:first-child {
 
 .app {
   margin: auto;
-  max-width: 860px;
+  max-width: 820px;
 }

@@ -23,4 +23,8 @@ export class Config {
       password: process.env.DB_PASSWORD || 'quake',
     },
   };
+
+  players = {
+    useIcons: process.env.USE_PLAYER_ICONS === '1',
+  };
 }
