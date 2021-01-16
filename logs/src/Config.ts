@@ -9,8 +9,8 @@ export class Config {
 
   client = {
     enabled: process.env.CLIENT_DISABLED !== '1',
-    host: 'quake',
-    port: 3000,
+    host: process.env.QUAKE_HOST || 'quake',
+    port: parseInt(process.env.QUAKE_PORT || '3000'),
   };
 
   db: Knex.Config = {
@@ -26,5 +26,11 @@ export class Config {
 
   players = {
     useIcons: process.env.USE_PLAYER_ICONS === '1',
+  };
+
+  sounds = {
+    armorDelay: 22000,
+    enabled: process.env.PLAY_SOUNDS === '1',
+    playerId: 1,
   };
 }

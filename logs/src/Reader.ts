@@ -8,6 +8,7 @@ import { ItemInsert } from './items/ItemTypes';
 import { ItemRepository } from './items/ItemRepository';
 import { KillInsert } from './kills/KillTypes';
 import { KillRepository } from './kills/KillRepository';
+import { NotifyController } from './notify/NotifyController';
 import { Player } from './players/PlayerTypes';
 import { PlayerRepository } from './players/PlayerRepository';
 
@@ -23,6 +24,7 @@ export class Reader {
     private gameRepo: GameRepository,
     private itemRepo: ItemRepository,
     private killRepo: KillRepository,
+    private notify: NotifyController,
     private parser: Parser,
     private playerRepo: PlayerRepository
   ) {
@@ -59,6 +61,8 @@ export class Reader {
           await this.gameRepo.end(this.game.id);
         }
         this.game = undefined;
+        this.notify.cancelArmor();
+        this.notify.notifyGameEnd();
         return true;
       case 'ClientBegin':
         {
@@ -113,6 +117,7 @@ export class Reader {
       } else {
         await this.gameRepo.addScore(game_id, data.killer_id);
       }
+      this.notify.notifyKill(data.player_id);
     } else if (isItem(parsed)) {
       const data: ItemInsert = {
         player_id: this.getPlayerId(parsed.player_client_id),
@@ -120,6 +125,9 @@ export class Reader {
         game_id: await this.getGameId(),
       };
       await this.itemRepo.create(data);
+      if (parsed.item === 'item_armor_body') {
+        this.notify.notifyArmor();
+      }
     }
   }
 

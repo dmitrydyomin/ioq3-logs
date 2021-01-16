@@ -8,6 +8,9 @@ module.exports = function useProxy(app) {
       pathRewrite: {
         '^/api': '',
       },
+    }),
+    proxy('/socket.io', {
+      target: 'http://localhost:3001/',
       ws: true,
       proxyTimeout: 7 * 86400 * 1000,
       timeout: 7 * 86400 * 1000,

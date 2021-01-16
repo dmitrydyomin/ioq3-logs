@@ -23,6 +23,8 @@
     "pg": "^8.5.1",
     "reflect-metadata": "^0.1.13",
     "routing-controllers": "^0.9.0-alpha.6",
+    "socket-controllers": "0.0.5",
+    "socket.io": "^3.0.5",
     "typedi": "^0.8.0"
   },
   "devDependencies": {
