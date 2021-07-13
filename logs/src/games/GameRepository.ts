@@ -49,7 +49,7 @@ export class GameRepository {
     });
     let saved = await this.findOne(id);
     const players = await this.getGamePlayers([id]);
-    if (this.showInStats(saved, players[id])) {
+    if (this.showInStats(saved, players[id] || [])) {
       await this.t().where({ id }).update({ show_in_stats: true });
       saved = await this.findOne(id);
     }
