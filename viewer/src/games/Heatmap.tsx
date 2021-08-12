@@ -73,7 +73,7 @@ export const Heatmap: React.FC = () => {
           fill:
             value === undefined
               ? undefined
-              : (Math.round((value / max) * 4) as DayFill),
+              : (Math.ceil((value / max) * 4) as DayFill),
           value,
         });
       }
