@@ -18,23 +18,33 @@
     "class-transformer": "^0.3.1",
     "class-validator": "^0.12.2",
     "express": "^4.17.1",
-    "knex": "^0.21.15",
+    "knex": "^0.95.11",
     "p-queue": "^6.6.2",
-    "pg": "^8.5.1",
+    "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
-    "routing-controllers": "^0.9.0-alpha.6",
-    "socket-controllers": "0.0.5",
-    "socket.io": "^3.0.5",
-    "typedi": "^0.8.0"
+    "routing-controllers": "^0.9.0",
+    "socket-controllers": "^0.0.5",
+    "socket.io": "^4.2.0",
+    "typedi": "^0.10.0"
   },
   "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^2.0.4",
     "@types/express": "^4.17.13",
-    "@types/jest": "^26.0.24",
+    "@types/jest": "^27.0.2",
     "dotenv": "^10.0.0",
-    "jest": "^27.0.6",
-    "nodemon": "^2.0.12",
-    "ts-jest": "^27.0.3",
-    "ts-node": "^10.1.0",
-    "typescript": "^4.3.5"
+    "jest": "^27.2.5",
+    "nodemon": "^2.0.13",
+    "ts-jest": "^27.0.5",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3"
+  },
+  "prettier": {
+    "importOrder": [
+      "reflect-metadata",
+      "^[^.]",
+      "^[./]"
+    ],
+    "importOrderSeparation": true,
+    "singleQuote": true
   }
 }

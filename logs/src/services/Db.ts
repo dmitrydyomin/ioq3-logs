@@ -1,11 +1,11 @@
 import { Service } from 'typedi';
-import knex from 'knex';
+import knex, { Knex } from 'knex';
 
 import { Config } from '../Config';
 
 @Service()
 export class Db {
-  public knex: knex;
+  public knex: Knex;
 
   constructor(config: Config) {
     this.knex = knex(config.db);

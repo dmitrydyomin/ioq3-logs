@@ -1,7 +1,9 @@
 import { Get, JsonController } from 'routing-controllers';
+import { Service } from 'typedi';
 
 import { GameRepository } from './GameRepository';
 
+@Service()
 @JsonController('/games')
 export class GameController {
   constructor(private repo: GameRepository) {}
@@ -13,7 +15,7 @@ export class GameController {
 
   @Get('/heatmap')
   getHeatmap() {
-    return this.repo.getHeatmap();
+    return this.repo.getHeatmap(new Date());
   }
 
   @Get('/totals')

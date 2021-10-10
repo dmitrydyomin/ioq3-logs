@@ -5,6 +5,7 @@ import {
   SocketController,
 } from 'socket-controllers';
 import { Socket } from 'socket.io';
+import { Service } from 'typedi';
 
 import { Config } from '../Config';
 
@@ -14,6 +15,7 @@ enum EventType {
   GameEnd = 2,
 }
 
+@Service()
 @SocketController('/notify')
 export class NotifyController {
   private armorTimeout: NodeJS.Timeout | undefined;

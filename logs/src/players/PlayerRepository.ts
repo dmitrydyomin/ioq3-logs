@@ -27,8 +27,7 @@ export class PlayerRepository {
     return row;
   }
 
-  async findOrCreate(data: PlayerInsert): Promise<Player> {
-    const now = new Date();
+  async findOrCreate(data: PlayerInsert, now: Date): Promise<Player> {
     const existing = await this.findByName(data.name);
     if (existing) {
       if (data.model !== existing.model) {

@@ -13,10 +13,10 @@ export class ItemRepository {
     return this.db.knex<Item>(this.table);
   }
 
-  async create(data: ItemInsert) {
+  async create(data: ItemInsert, created_at: Date) {
     await this.t().insert({
       ...data,
-      created_at: new Date(),
+      created_at,
     });
   }
 }

@@ -1,16 +1,16 @@
-import { Service } from 'typedi';
 import PQueue from 'p-queue';
+import { Service } from 'typedi';
 
-import { Game } from './games/GameTypes';
-import { GameRepository } from './games/GameRepository';
 import { isClientInfo, isItem, isKill, Parser } from './Parser';
-import { ItemInsert } from './items/ItemTypes';
+import { GameRepository } from './games/GameRepository';
+import { Game } from './games/GameTypes';
 import { ItemRepository } from './items/ItemRepository';
-import { KillInsert } from './kills/KillTypes';
+import { ItemInsert } from './items/ItemTypes';
 import { KillRepository } from './kills/KillRepository';
+import { KillInsert } from './kills/KillTypes';
 import { NotifyController } from './notify/NotifyController';
-import { Player } from './players/PlayerTypes';
 import { PlayerRepository } from './players/PlayerRepository';
+import { Player } from './players/PlayerTypes';
 
 const CLIENT_ID_WORLD = 1022;
 
@@ -38,27 +38,27 @@ export class Reader {
     return this.players[clientId].id;
   }
 
-  private async startGame() {
-    this.game = await this.gameRepo.start();
+  private async startGame(date: Date) {
+    this.game = await this.gameRepo.start(date);
   }
 
-  private async getGameId() {
+  private async getGameId(date: Date) {
     if (!this.game) {
-      await this.startGame();
+      await this.startGame(date);
     }
     return this.game?.id as number;
   }
 
-  private async handleGameLines(line: string) {
+  private async handleGameLines(line: string, date: Date) {
     const [start, rest] = line.split(':');
     switch (start) {
       case 'InitGame':
-        await this.startGame();
+        await this.startGame(date);
         return true;
       case 'ShutdownGame':
       case 'Exit':
         if (this.game) {
-          await this.gameRepo.end(this.game.id);
+          await this.gameRepo.end(this.game.id, date);
         }
         this.game = undefined;
         this.notify.cancelArmor();
@@ -68,8 +68,9 @@ export class Reader {
         {
           const clientId = parseInt(rest);
           await this.gameRepo.playerEnter(
-            await this.getGameId(),
-            this.getPlayerId(clientId)
+            await this.getGameId(date),
+            this.getPlayerId(clientId),
+            date
           );
         }
         break;
@@ -77,7 +78,7 @@ export class Reader {
         {
           const clientId = parseInt(rest);
           await this.gameRepo.playerLeave(
-            await this.getGameId(),
+            await this.getGameId(date),
             this.getPlayerId(clientId)
           );
         }
@@ -87,8 +88,8 @@ export class Reader {
     }
   }
 
-  private async processLineRaw(line: string) {
-    if (await this.handleGameLines(line)) {
+  private async processLineRaw(line: string, date: Date) {
+    if (await this.handleGameLines(line, date)) {
       return;
     }
     const parsed = this.parser.parseLine(line);
@@ -96,12 +97,15 @@ export class Reader {
       return;
     }
     if (isClientInfo(parsed)) {
-      this.players[parsed.client_id] = await this.playerRepo.findOrCreate({
-        name: parsed.name,
-        model: parsed.model,
-      });
+      this.players[parsed.client_id] = await this.playerRepo.findOrCreate(
+        {
+          name: parsed.name,
+          model: parsed.model,
+        },
+        date
+      );
     } else if (isKill(parsed)) {
-      const game_id = await this.getGameId();
+      const game_id = await this.getGameId(date);
       const data: KillInsert = {
         player_id: this.getPlayerId(parsed.player_client_id),
         killer_id:
@@ -111,7 +115,7 @@ export class Reader {
         weapon: parsed.weapon,
         game_id,
       };
-      await this.killRepo.create(data);
+      await this.killRepo.create(data, date);
       if (data.killer_id === null || data.killer_id === data.player_id) {
         await this.gameRepo.subScore(game_id, data.player_id);
       } else {
@@ -122,16 +126,16 @@ export class Reader {
       const data: ItemInsert = {
         player_id: this.getPlayerId(parsed.player_client_id),
         item: parsed.item,
-        game_id: await this.getGameId(),
+        game_id: await this.getGameId(date),
       };
-      await this.itemRepo.create(data);
+      await this.itemRepo.create(data, date);
       if (parsed.item === 'item_armor_body') {
         this.notify.notifyArmor();
       }
     }
   }
 
-  async processLine(line: string) {
-    await this.queue.add(() => this.processLineRaw(line));
+  async processLine(line: string, date: Date) {
+    await this.queue.add(() => this.processLineRaw(line, date));
   }
 }

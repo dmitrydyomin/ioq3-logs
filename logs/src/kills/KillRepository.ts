@@ -13,10 +13,10 @@ export class KillRepository {
     return this.db.knex<Kill>(this.table);
   }
 
-  async create(data: KillInsert) {
+  async create(data: KillInsert, created_at: Date) {
     await this.t().insert({
       ...data,
-      created_at: new Date(),
+      created_at,
     });
   }
 }

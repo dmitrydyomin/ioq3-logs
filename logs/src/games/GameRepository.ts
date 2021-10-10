@@ -1,10 +1,10 @@
 import { NotFoundError } from 'routing-controllers';
 import { Service } from 'typedi';
 
-import { ClientGame, Game, GamePlayer } from './GameTypes';
 import { Config } from '../Config';
-import { Db } from '../services/Db';
 import { PlayerRepository } from '../players/PlayerRepository';
+import { Db } from '../services/Db';
+import { ClientGame, Game, GamePlayer } from './GameTypes';
 
 @Service()
 export class GameRepository {
@@ -33,19 +33,19 @@ export class GameRepository {
     return row;
   }
 
-  async start() {
+  async start(started_at: Date) {
     const [id] = await this.t()
       .insert({
-        started_at: new Date(),
+        started_at,
         show_in_stats: false,
       })
       .returning('id');
     return this.findOne(id);
   }
 
-  async end(id: number) {
+  async end(id: number, ended_at: Date) {
     await this.t().where({ id }).update({
-      ended_at: new Date(),
+      ended_at,
     });
     let saved = await this.findOne(id);
     const players = await this.getGamePlayers([id]);
@@ -56,10 +56,10 @@ export class GameRepository {
     return saved;
   }
 
-  async playerEnter(game_id: number, player_id: number) {
+  async playerEnter(game_id: number, player_id: number, entered_at: Date) {
     const where = { game_id, player_id };
     const patch = {
-      entered_at: new Date(),
+      entered_at,
       left_at: null,
       score: 0,
     };
@@ -90,7 +90,7 @@ export class GameRepository {
         ...all,
         [r.game_id]: [...(all[r.game_id] || []), r],
       }),
-      <Record<number, GamePlayer[]>>{}
+      {} as Record<number, GamePlayer[]>
     );
   }
 
@@ -139,8 +139,7 @@ export class GameRepository {
     return res;
   }
 
-  async getHeatmap() {
-    const endDate = new Date();
+  async getHeatmap(endDate: Date) {
     endDate.setHours(23, 59, 59, 999);
 
     let startDate = new Date(endDate.getTime());
@@ -181,7 +180,7 @@ export class GameRepository {
       .whereIn('game_id', gameIds);
     const byGame = rows.reduce(
       (all, r) => ({ ...all, [r.game_id]: [...(all[r.game_id] || []), r] }),
-      <Record<number, GamePlayer[]>>{}
+      {} as Record<number, GamePlayer[]>
     );
     const scores = Object.values(byGame).map((players) => {
       const p = [...players];
@@ -193,7 +192,7 @@ export class GameRepository {
         ...all,
         [playerId]: (all[playerId] || 0) + 1,
       }),
-      <Record<number, number>>{}
+      {} as Record<number, number>
     );
 
     return {

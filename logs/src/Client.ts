@@ -1,5 +1,5 @@
-import { Service } from 'typedi';
 import net from 'net';
+import { Service } from 'typedi';
 
 import { Config } from './Config';
 import { Reader } from './Reader';
@@ -18,7 +18,7 @@ export class Client {
 
     client.on('data', (data) => {
       const lines = data.toString().split('\n').filter(Boolean);
-      lines.forEach((line) => this.reader.processLine(line));
+      lines.forEach((line) => this.reader.processLine(line, new Date()));
     });
 
     client.on('end', () => {
