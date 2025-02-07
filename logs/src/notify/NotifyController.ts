@@ -12,7 +12,7 @@ import { Config } from '../Config';
 enum EventType {
   Lamo = 1,
   Armor = 2,
-  GameEnd = 2,
+  GameEnd = 3,
 }
 
 @Service()

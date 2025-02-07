@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { io } from 'socket.io-client';
 
 enum EventType {
   Lamo = 1,
   Armor = 2,
-  GameEnd = 2,
+  GameEnd = 3,
 }
 
 const playSound = (id: number) => {

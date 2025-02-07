@@ -46,14 +46,14 @@ export class PlayerRepository {
         model: data.model,
       })
       .returning('id');
-    return this.findOne(id);
+    return this.findOne(id.id);
   }
 
   async findAll() {
     const rows = await this.t();
     return rows.reduce(
       (all, r) => ({ ...all, [r.id]: r }),
-      <Record<number, Player>>{}
+      <Record<number, Player>>{},
     );
   }
 }

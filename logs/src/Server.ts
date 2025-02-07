@@ -1,31 +1,29 @@
-import { Container, Service } from 'typedi';
-import { createServer, Server as HttpServer } from 'http';
-import { Server as Io } from 'socket.io';
-import { useContainer, useExpressServer } from 'routing-controllers';
-import {
-  useContainer as useSocketContainer,
-  useSocketServer,
-} from 'socket-controllers';
 import express from 'express';
+import { createServer, Server as HttpServer } from 'http';
+import { useContainer, useExpressServer } from 'routing-controllers';
+import { SocketControllers } from 'socket-controllers';
+import { Server as Io } from 'socket.io';
+import { Container, Service } from 'typedi';
 
 import { Config } from './Config';
-import { errorMiddleware } from './utils/errorMiddleware';
 import { GameController } from './games/GameController';
 import { NotifyController } from './notify/NotifyController';
+import { errorMiddleware } from './utils/errorMiddleware';
 
 @Service()
 export class Server {
-  private httpServer: HttpServer;
+  private httpServer;
 
   constructor(private config: Config) {
     useContainer(Container);
-    useSocketContainer(Container);
 
     const app = express();
     this.httpServer = createServer(app);
     const io = new Io(this.httpServer);
 
-    useSocketServer(io, {
+    new SocketControllers({
+      io,
+      container: Container,
       controllers: [NotifyController],
     });
 

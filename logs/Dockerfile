@@ -1,4 +1,4 @@
-FROM node:16 AS builder
+FROM node:alpine AS builder
 WORKDIR /app
 COPY ./package*.json ./
 RUN npm ci
@@ -6,7 +6,7 @@ COPY ./src ./src
 COPY ./tsconfig*.json ./
 RUN npm run build
 
-FROM node:16-alpine
+FROM node:alpine
 WORKDIR /app
 COPY ./package*.json ./
 RUN npm ci --only=prod

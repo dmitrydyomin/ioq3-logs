@@ -1,4 +1,4 @@
-import { Get, JsonController } from 'routing-controllers';
+import { Get, JsonController, QueryParam } from 'routing-controllers';
 import { Service } from 'typedi';
 
 import { GameRepository } from './GameRepository';
@@ -9,8 +9,8 @@ export class GameController {
   constructor(private repo: GameRepository) {}
 
   @Get()
-  getGames() {
-    return this.repo.getClientGames();
+  getGames(@QueryParam('all') all?: string) {
+    return this.repo.getClientGames(all === '1');
   }
 
   @Get('/heatmap')

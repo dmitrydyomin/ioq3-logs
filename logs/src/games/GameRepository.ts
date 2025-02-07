@@ -14,7 +14,7 @@ export class GameRepository {
   constructor(
     private config: Config,
     private db: Db,
-    private players: PlayerRepository
+    private players: PlayerRepository,
   ) {}
 
   private t() {
@@ -40,7 +40,7 @@ export class GameRepository {
         show_in_stats: false,
       })
       .returning('id');
-    return this.findOne(id);
+    return this.findOne(id.id);
   }
 
   async end(id: number, ended_at: Date) {
@@ -90,7 +90,7 @@ export class GameRepository {
         ...all,
         [r.game_id]: [...(all[r.game_id] || []), r],
       }),
-      {} as Record<number, GamePlayer[]>
+      {} as Record<number, GamePlayer[]>,
     );
   }
 
@@ -103,16 +103,25 @@ export class GameRepository {
       return false;
     }
     const fp = players.filter(
-      (p) => p.entered_at.getTime() - game.started_at.getTime() < 10000
+      (p) => p.entered_at.getTime() - game.started_at.getTime() < 10000,
     );
     return fp.length > 1 && fp.some((p) => !p.left_at);
   }
 
-  async getClientGames() {
-    const games = await this.t()
+  async getClientGames(all: boolean) {
+    const q = this.t()
       .where({ show_in_stats: true })
       .whereNotNull('ended_at')
       .orderBy('started_at', 'desc');
+
+    if (!all) {
+      const minDate = new Date();
+      minDate.setFullYear(minDate.getFullYear() - 1, 0, 1);
+      minDate.setHours(0, 0, 0, 0);
+      q.where('started_at', '>=', minDate);
+    }
+
+    const games = await q;
 
     const gamePlayers = await this.getGamePlayers(games.map((g) => g.id));
     const players = await this.players.findAll();
@@ -127,7 +136,7 @@ export class GameRepository {
           model: players[gp.player_id]?.model || '',
           score: gp.score,
         })),
-      })
+      }),
     );
   }
 
@@ -153,9 +162,9 @@ export class GameRepository {
       .where('started_at', '<=', endDate)
       .count('* as count')
       .groupByRaw('DATE(started_at)')
-      .select<{ count: string; date: Date }[]>(
-        this.db.knex.raw('DATE(started_at) as date')
-      );
+      .select<
+        { count: string; date: Date }[]
+      >(this.db.knex.raw('DATE(started_at) as date'));
     return {
       startDate,
       endDate,
@@ -180,7 +189,7 @@ export class GameRepository {
       .whereIn('game_id', gameIds);
     const byGame = rows.reduce(
       (all, r) => ({ ...all, [r.game_id]: [...(all[r.game_id] || []), r] }),
-      {} as Record<number, GamePlayer[]>
+      {} as Record<number, GamePlayer[]>,
     );
     const scores = Object.values(byGame).map((players) => {
       const p = [...players];
@@ -192,7 +201,7 @@ export class GameRepository {
         ...all,
         [playerId]: (all[playerId] || 0) + 1,
       }),
-      {} as Record<number, number>
+      {} as Record<number, number>,
     );
 
     return {

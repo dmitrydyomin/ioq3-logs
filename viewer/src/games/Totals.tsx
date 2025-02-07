@@ -1,8 +1,7 @@
-import React, { useMemo } from 'react';
 import useAxios from 'axios-hooks';
-
-import './Totals.css';
+import { useMemo } from 'react';
 import { TotalData } from './GameTypes';
+import './Totals.css';
 
 export const Totals: React.FC = () => {
   const [{ data, error, loading }] = useAxios<TotalData>('/api/games/totals');

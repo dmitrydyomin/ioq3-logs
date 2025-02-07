@@ -1,7 +1,6 @@
-import React, { useMemo } from 'react';
 import useAxios from 'axios-hooks';
 import dayjs from 'dayjs';
-
+import { useMemo } from 'react';
 import { Game } from './GameTypes';
 
 export const Games: React.FC = () => {
@@ -18,7 +17,7 @@ export const Games: React.FC = () => {
             header[p.id] = p.name;
           });
         }
-        let line: string[] = [
+        const line: string[] = [
           dayjs(g.started_at).format('DD.MM.YYYY HH:mm:ss'),
         ];
         g.players.forEach((p) => {

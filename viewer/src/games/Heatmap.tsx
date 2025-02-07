@@ -1,9 +1,8 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import dayjs, { Dayjs } from 'dayjs';
 import useAxios from 'axios-hooks';
-
-import './Heatmap.css';
+import dayjs, { Dayjs } from 'dayjs';
+import { MouseEventHandler, useMemo, useState } from 'react';
 import { HeatmapData } from './GameTypes';
+import './Heatmap.css';
 
 type DayFill = 0 | 1 | 2 | 3 | 4;
 
@@ -27,9 +26,8 @@ const dayFills: Record<DayFill, string> = {
 const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export const Heatmap: React.FC = () => {
-  const [{ data, error, loading }] = useAxios<HeatmapData>(
-    '/api/games/heatmap'
-  );
+  const [{ data, error, loading }] =
+    useAxios<HeatmapData>('/api/games/heatmap');
 
   const byOffset = useMemo(() => {
     const res: Record<number, number> = {};
@@ -88,8 +86,8 @@ export const Heatmap: React.FC = () => {
     { title: string; body: string; x: number; y: number } | undefined
   >();
 
-  const onMouseEnter = useCallback(
-    (e: React.MouseEvent<SVGRectElement>) => {
+  const onMouseEnter = useMemo<MouseEventHandler<SVGRectElement>>(
+    () => (e) => {
       const col = parseInt(e.currentTarget.getAttribute('data-col') || '');
       const row = parseInt(e.currentTarget.getAttribute('data-row') || '');
       const cell = columns[col].cells[row];
@@ -104,9 +102,12 @@ export const Heatmap: React.FC = () => {
     [columns]
   );
 
-  const onMouseLeave = useCallback((e: React.MouseEvent<SVGRectElement>) => {
-    setTooltip(undefined);
-  }, []);
+  const onMouseLeave = useMemo<MouseEventHandler<SVGRectElement>>(
+    () => () => {
+      setTooltip(undefined);
+    },
+    []
+  );
 
   return (
     <div className="heatmap">
