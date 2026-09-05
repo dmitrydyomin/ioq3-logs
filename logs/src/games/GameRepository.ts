@@ -34,13 +34,11 @@ export class GameRepository {
   }
 
   async start(started_at: Date) {
-    const [id] = await this.t()
-      .insert({
-        started_at,
-        show_in_stats: false,
-      })
-      .returning('id');
-    return this.findOne(id.id);
+    const [id] = await this.t().insert({
+      started_at,
+      show_in_stats: false,
+    });
+    return this.findOne(id);
   }
 
   async end(id: number, ended_at: Date) {
@@ -163,13 +161,13 @@ export class GameRepository {
       .count('* as count')
       .groupByRaw('DATE(started_at)')
       .select<
-        { count: string; date: Date }[]
+        { count: string | number; date: Date }[]
       >(this.db.knex.raw('DATE(started_at) as date'));
     return {
       startDate,
       endDate,
       values: rows.map((r) => ({
-        count: parseInt(r.count),
+        count: Number(r.count),
         date: r.date,
       })),
     };

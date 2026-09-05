@@ -38,15 +38,13 @@ export class PlayerRepository {
       }
       return existing;
     }
-    const [id] = await this.t()
-      .insert({
-        created_at: now,
-        updated_at: now,
-        name: data.name,
-        model: data.model,
-      })
-      .returning('id');
-    return this.findOne(id.id);
+    const [id] = await this.t().insert({
+      created_at: now,
+      updated_at: now,
+      name: data.name,
+      model: data.model,
+    });
+    return this.findOne(id);
   }
 
   async findAll() {

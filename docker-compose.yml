@@ -13,7 +13,7 @@ services:
     image: dmitrydyomin/ioq3-logs
     restart: unless-stopped
     environment:
-      DB_HOST: postgres
+      DB_HOST: mysql
       DB_PASSWORD: '${DB_PASSWORD}'
     networks:
       - default
@@ -22,4 +22,4 @@ services:
 networks:
   db:
     external:
-      name: postgres_default
+      name: mysql_default
