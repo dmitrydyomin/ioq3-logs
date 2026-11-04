@@ -16,7 +16,10 @@ export class Config {
   client = {
     enabled: process.env.CLIENT_DISABLED !== '1',
     host: process.env.QUAKE_HOST || 'quake',
+    keepAliveDelay: 30000,
     port: parseInt(process.env.QUAKE_PORT || '3000'),
+    reconnectDelay: 500,
+    reconnectMaxDelay: 5000,
   };
 
   db: Knex.Config = {

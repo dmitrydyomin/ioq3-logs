@@ -18,6 +18,10 @@ const CLIENT_ID_WORLD = 1022;
 export class Reader {
   private players: Record<number, Player> = {};
   private game: Game | undefined;
+  // Between the end of a game and the next InitGame. Events still arrive here,
+  // for example from the end screen, and must not start a new game. It can't
+  // be told from having no game yet, when a game is created on the first event.
+  private gameOver = false;
   private queue: PQueue;
 
   constructor(
@@ -39,6 +43,7 @@ export class Reader {
   }
 
   private async startGame(date: Date) {
+    this.gameOver = false;
     this.game = await this.gameRepo.start(date);
   }
 
@@ -61,26 +66,24 @@ export class Reader {
           await this.gameRepo.end(this.game.id, date);
         }
         this.game = undefined;
+        this.gameOver = true;
         this.notify.cancelArmor();
         this.notify.notifyGameEnd();
         return true;
       case 'ClientBegin':
-        {
-          const clientId = parseInt(rest);
+        if (!this.gameOver) {
+          const playerId = this.getPlayerId(parseInt(rest));
           await this.gameRepo.playerEnter(
             await this.getGameId(date),
-            this.getPlayerId(clientId),
+            playerId,
             date
           );
         }
         break;
       case 'ClientDisconnect':
-        {
-          const clientId = parseInt(rest);
-          await this.gameRepo.playerLeave(
-            await this.getGameId(date),
-            this.getPlayerId(clientId)
-          );
+        if (!this.gameOver) {
+          const playerId = this.getPlayerId(parseInt(rest));
+          await this.gameRepo.playerLeave(await this.getGameId(date), playerId);
         }
         break;
       default:
@@ -104,14 +107,19 @@ export class Reader {
         },
         date
       );
+    } else if (this.gameOver) {
+      return;
     } else if (isKill(parsed)) {
+      // Resolve players first, so an unknown client doesn't leave an empty game.
+      const player_id = this.getPlayerId(parsed.player_client_id);
+      const killer_id =
+        parsed.killer_client_id === CLIENT_ID_WORLD
+          ? null
+          : this.getPlayerId(parsed.killer_client_id);
       const game_id = await this.getGameId(date);
       const data: KillInsert = {
-        player_id: this.getPlayerId(parsed.player_client_id),
-        killer_id:
-          parsed.killer_client_id === CLIENT_ID_WORLD
-            ? null
-            : this.getPlayerId(parsed.killer_client_id),
+        player_id,
+        killer_id,
         weapon: parsed.weapon,
         game_id,
       };
@@ -137,5 +145,19 @@ export class Reader {
 
   async processLine(line: string, date: Date) {
     await this.queue.add(() => this.processLineRaw(line, date));
+  }
+
+  /**
+   * Forgets the current session. Called when the log stream is lost, because
+   * client ids may belong to other players by the time it comes back.
+   * Queued, so lines received before the disconnect are processed first.
+   */
+  async reset() {
+    await this.queue.add(() => {
+      this.players = {};
+      this.game = undefined;
+      this.gameOver = false;
+      this.notify.cancelArmor();
+    });
   }
 }
