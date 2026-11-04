@@ -1,7 +1,10 @@
 :root {
   --color-bg-canvas: #fff;
   --color-text-primary: #24292e;
+  --color-text-secondary: #57606a;
   --color-border-primary: #e1e4e8;
+  --color-blue: #1056b6;
+  --color-red: #ed4748;
 }
 
 body {

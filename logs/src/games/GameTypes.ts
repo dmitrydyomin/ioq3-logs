@@ -24,3 +24,34 @@ export interface ClientGame {
     score: number;
   }[];
 }
+
+export const insightsPeriods = ['month', 'year', 'all'] as const;
+
+export type InsightsPeriod = (typeof insightsPeriods)[number];
+
+export type InsightsBucket = 'day' | 'month' | 'quarter';
+
+export interface InsightsPlayer {
+  id: number;
+  name: string;
+  wins: number;
+  frags: number;
+  deaths: number;
+  worldDeaths: number;
+  suicides: number;
+  avgScore: number;
+  bestScore: number;
+  longestStreak: number;
+  currentStreak: number;
+}
+
+export interface GameInsights {
+  period: InsightsPeriod;
+  bucket: InsightsBucket;
+  games: number;
+  draws: number;
+  players: InsightsPlayer[];
+  timeline: { date: string; wins: number[]; draws: number }[];
+  weapons: { weapon: string; frags: number[] }[];
+  edges: { label: string; wins: number; games: number }[];
+}

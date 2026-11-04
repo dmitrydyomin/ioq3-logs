@@ -26,3 +26,30 @@ export interface TotalData {
     wins: number;
   }[];
 }
+
+export type InsightsPeriod = 'month' | 'year' | 'all';
+
+export interface InsightsPlayer {
+  id: number;
+  name: string;
+  wins: number;
+  frags: number;
+  deaths: number;
+  worldDeaths: number;
+  suicides: number;
+  avgScore: number;
+  bestScore: number;
+  longestStreak: number;
+  currentStreak: number;
+}
+
+export interface GameInsights {
+  period: InsightsPeriod;
+  bucket: 'day' | 'month' | 'quarter';
+  games: number;
+  draws: number;
+  players: InsightsPlayer[];
+  timeline: { date: string; wins: number[]; draws: number }[];
+  weapons: { weapon: string; frags: number[] }[];
+  edges: { label: string; wins: number; games: number }[];
+}

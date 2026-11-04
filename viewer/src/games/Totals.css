@@ -1,7 +1,4 @@
 .totals {
-  --color-blue: #1056b6;
-  --color-red: #ed4748;
-
   font-feature-settings: 'tnum';
   font-variant-numeric: tabular-nums;
 
