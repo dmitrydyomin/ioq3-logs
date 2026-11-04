@@ -19,7 +19,10 @@ async function processLineByLine() {
   // ('\r\n') in input.txt as a single line break.
 
   for await (const line of rl) {
-    const m = line.match(/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)\s+(.*)$/);
+    // Timestamps end in Z from docker logs -t, or an offset from kubectl logs.
+    const m = line.match(
+      /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+(?:Z|[+-]\d{2}:\d{2}))\s+(.*)$/
+    );
     if (m) {
       const date = new Date(m[1]);
       console.log(date, m[2]);
