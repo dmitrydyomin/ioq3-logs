@@ -97,4 +97,4 @@ The project moved from PostgreSQL to MySQL; `utils/pgToMysql.ts` (`npm run migra
 
 `docker-compose.yml` runs the `quake` and `logs` services from prebuilt images (`dmitrydyomin/ioq3`, `dmitrydyomin/ioq3-logs`) and expects an external `mysql_default` network. The `viewer` image is not in this compose file, and its nginx config expects to reach the backend at host `logs`. The game server image needs `pak0.pk3` mounted at `/pak0.pk3`, because the game data is not distributable.
 
-Production runs on k3s; the manifests are in the `ddemin/c1k3s` repo (`apps/quake3/`). See [docs/server-hang.md](docs/server-hang.md) for what to capture when the server hangs on "awaiting gamestate".
+Production runs on k3s; the manifests are in the `ddemin/c1k3s` repo (`apps/quake3/`). GitHub Actions builds and pushes `hub.dma1.ru/ioq3-logs` and `hub.dma1.ru/ioq3-viewer` on pushes to `main` that touch their folder, using separate workflows so that a change to one doesn't rebuild the other. The game server image from the root `Dockerfile` isn't built there. See [docs/server-hang.md](docs/server-hang.md) for what to capture when the server hangs on "awaiting gamestate".
