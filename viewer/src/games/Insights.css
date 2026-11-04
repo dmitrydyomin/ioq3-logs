@@ -101,8 +101,15 @@
   font-weight: 600;
 }
 
-.insights-comparison thead th {
-  white-space: nowrap;
+/* Keeps the swatch beside the name when a long name wraps. */
+.insights-player {
+  align-items: baseline;
+  display: inline-flex;
+  text-align: left;
+}
+
+.insights-player .insights-swatch {
+  flex: none;
 }
 
 .insights-comparison tbody th {

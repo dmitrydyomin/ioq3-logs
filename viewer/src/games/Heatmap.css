@@ -10,6 +10,14 @@
   --color-auto-gray-4: #959da5;
 }
 
+.heatmap-scroll {
+  overflow-x: auto;
+}
+
+.heatmap svg {
+  display: block;
+}
+
 .heatmap .day {
   shape-rendering: geometricPrecision;
   outline: 1px solid var(--color-calendar-graph-day-border);
@@ -38,6 +46,7 @@
   background: rgba(0, 0, 0, 0.8);
   border-radius: 6px;
   pointer-events: none;
+  transform: translateX(-50%);
   white-space: nowrap;
 }
 
@@ -48,7 +57,7 @@
 .heatmap .tooltip:after {
   position: absolute;
   bottom: -10px;
-  left: 50%;
+  left: calc(50% + var(--arrow-shift, 0px));
   width: 5px;
   height: 5px;
   box-sizing: border-box;

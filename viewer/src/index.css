@@ -40,4 +40,9 @@ td:first-child {
 .app {
   margin: auto;
   max-width: 820px;
+  padding-inline: 16px;
+}
+
+.games {
+  overflow-x: auto;
 }

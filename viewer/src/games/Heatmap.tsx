@@ -1,6 +1,13 @@
 import useAxios from 'axios-hooks';
 import dayjs, { Dayjs } from 'dayjs';
-import { MouseEventHandler, useMemo, useState } from 'react';
+import {
+  CSSProperties,
+  MouseEventHandler,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { HeatmapData } from './GameTypes';
 import './Heatmap.css';
 
@@ -24,6 +31,9 @@ const dayFills: Record<DayFill, string> = {
 };
 
 const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+// About half the width of the tooltip, to keep it inside the chart.
+const tooltipMargin = 90;
 
 export const Heatmap: React.FC = () => {
   const [{ data, error, loading }] =
@@ -82,8 +92,19 @@ export const Heatmap: React.FC = () => {
     return res;
   }, [byOffset, data]);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // On a narrow screen only part of the year fits, so start at the latest weeks.
+  useLayoutEffect(() => {
+    const scroll = scrollRef.current;
+    if (scroll) {
+      scroll.scrollLeft = scroll.scrollWidth;
+    }
+  }, [columns]);
+
   const [tooltip, setTooltip] = useState<
-    { title: string; body: string; x: number; y: number } | undefined
+    | { title: string; body: string; left: number; shift: number; y: number }
+    | undefined
   >();
 
   const onMouseEnter = useMemo<MouseEventHandler<SVGRectElement>>(
@@ -92,8 +113,17 @@ export const Heatmap: React.FC = () => {
       const row = parseInt(e.currentTarget.getAttribute('data-row') || '');
       const cell = columns[col].cells[row];
 
+      const scroll = scrollRef.current;
+      const center = 15 * col + 30 - (scroll?.scrollLeft || 0);
+      const width = scroll?.clientWidth || 0;
+      const left = Math.max(
+        tooltipMargin,
+        Math.min(center, width - tooltipMargin)
+      );
+
       setTooltip({
-        x: 15 * col,
+        left,
+        shift: center - left,
         y: 15 * row,
         title: `${cell.value} ${cell.value === 1 ? ' game' : 'games'}`,
         body: `on ${cell.date.format('MMM DD, YYYY')}`,
@@ -114,53 +144,61 @@ export const Heatmap: React.FC = () => {
       {loading && 'loading...'}
       {error && `error: ${error.message}`}
       {data && (
-        <svg width={828} height={128}>
-          <g transform="translate(10,20)">
-            {columns.map((col, i) => (
-              <g key={i} transform={`translate(${15 * i}, 0)`}>
-                {col.title && (
-                  <text x={15} y={-8} className="month">
-                    {col.title}
-                  </text>
-                )}
-                {col.cells.map((c, j) =>
-                  c.fill === undefined ? null : (
-                    <rect
-                      key={j}
-                      className="day"
-                      width={11}
-                      height={11}
-                      x={15}
-                      y={15 * j}
-                      fill={`var(${dayFills[c.fill]})`}
-                      data-col={i}
-                      data-row={j}
-                      onMouseEnter={onMouseEnter}
-                      onMouseLeave={onMouseLeave}
-                    />
-                  )
-                )}
-              </g>
-            ))}
-            {weekDays.map((d, i) => (
-              <text
-                key={i}
-                textAnchor="start"
-                className="wday"
-                dx={-10}
-                dy={8 + 15 * i}
-                style={i % 2 === 1 ? { display: 'none' } : undefined}
-              >
-                {d}
-              </text>
-            ))}
-          </g>
-        </svg>
+        <div ref={scrollRef} className="heatmap-scroll">
+          <svg width={15 * columns.length + 21} height={128}>
+            <g transform="translate(10,20)">
+              {columns.map((col, i) => (
+                <g key={i} transform={`translate(${15 * i}, 0)`}>
+                  {col.title && (
+                    <text x={15} y={-8} className="month">
+                      {col.title}
+                    </text>
+                  )}
+                  {col.cells.map((c, j) =>
+                    c.fill === undefined ? null : (
+                      <rect
+                        key={j}
+                        className="day"
+                        width={11}
+                        height={11}
+                        x={15}
+                        y={15 * j}
+                        fill={`var(${dayFills[c.fill]})`}
+                        data-col={i}
+                        data-row={j}
+                        onMouseEnter={onMouseEnter}
+                        onMouseLeave={onMouseLeave}
+                      />
+                    )
+                  )}
+                </g>
+              ))}
+              {weekDays.map((d, i) => (
+                <text
+                  key={i}
+                  textAnchor="start"
+                  className="wday"
+                  dx={-10}
+                  dy={8 + 15 * i}
+                  style={i % 2 === 1 ? { display: 'none' } : undefined}
+                >
+                  {d}
+                </text>
+              ))}
+            </g>
+          </svg>
+        </div>
       )}
       {tooltip && (
         <div
           className="tooltip"
-          style={{ top: tooltip.y - 29, left: tooltip.x - 53 }}
+          style={
+            {
+              top: tooltip.y - 29,
+              left: tooltip.left,
+              '--arrow-shift': `${tooltip.shift}px`,
+            } as CSSProperties
+          }
         >
           <strong>{tooltip.title}</strong> {tooltip.body}
         </div>

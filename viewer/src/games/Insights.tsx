@@ -106,8 +106,10 @@ const Comparison: React.FC<{ data: GameInsights }> = ({ data }) => {
           </th>
           {data.players.map((p, i) => (
             <th key={p.id} scope="col">
-              <i className={`insights-swatch player-${i}`} />
-              {p.name}
+              <span className="insights-player">
+                <i className={`insights-swatch player-${i}`} />
+                {p.name}
+              </span>
             </th>
           ))}
         </tr>
