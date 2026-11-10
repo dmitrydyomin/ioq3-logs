@@ -5,6 +5,7 @@ import {
   DirectionalLight,
   Float32BufferAttribute,
   Group,
+  MathUtils,
   Mesh,
   MeshLambertMaterial,
   OrthographicCamera,
@@ -103,13 +104,35 @@ export async function renderPlayerHead(
   renderer.setSize(96, 96, false);
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let lastPointerMove = -Infinity;
+  let pointerYaw = 0;
+  let pointerPitch = 0;
+  const trackPointer = (event: PointerEvent) => {
+    if (event.pointerType !== 'mouse' || !visible || reducedMotion.matches) return;
+
+    const { left, top, width, height } = canvas.getBoundingClientRect();
+    const dx = event.clientX - (left + width / 2);
+    const dy = event.clientY - (top + height / 2);
+    pointerYaw = Math.atan2(dx, 300) * 0.5;
+    pointerPitch = Math.atan2(dy, 300) * 0.25;
+    lastPointerMove = performance.now();
+  };
+
   let frame = 0;
   let visible = false;
   let contextLost = false;
+  let previousTime = performance.now();
   const draw = (time: number) => {
     const phase = reducedMotion.matches ? 0 : time / 900;
-    pivot.rotation.z = direction * (0.22 + Math.sin(phase) * 0.16);
-    pivot.rotation.y = Math.sin(phase * 0.75) * 0.035;
+    const idleYaw = direction * (0.22 + Math.sin(phase) * 0.16);
+    const idlePitch = Math.sin(phase * 0.75) * 0.035;
+    const idleBlend = MathUtils.smoothstep(time - lastPointerMove, 1500, 2200);
+    const yaw = MathUtils.lerp(pointerYaw, idleYaw, idleBlend);
+    const pitch = MathUtils.lerp(pointerPitch, idlePitch, idleBlend);
+    const delta = Math.max(0, time - previousTime) / 1000;
+    previousTime = time;
+    pivot.rotation.z = reducedMotion.matches ? idleYaw : MathUtils.damp(pivot.rotation.z, yaw, 10, delta);
+    pivot.rotation.y = reducedMotion.matches ? idlePitch : MathUtils.damp(pivot.rotation.y, pitch, 10, delta);
     renderer.render(scene, camera);
     if (visible && !reducedMotion.matches) frame = requestAnimationFrame(draw);
   };
@@ -133,6 +156,7 @@ export async function renderPlayerHead(
   };
 
   observer.observe(canvas.parentElement!);
+  window.addEventListener('pointermove', trackPointer, { passive: true });
   reducedMotion.addEventListener('change', refresh);
   canvas.addEventListener('webglcontextlost', showFallback);
   canvas.addEventListener('webglcontextrestored', showHead);
@@ -141,6 +165,7 @@ export async function renderPlayerHead(
   return () => {
     showFallback();
     observer.disconnect();
+    window.removeEventListener('pointermove', trackPointer);
     reducedMotion.removeEventListener('change', refresh);
     canvas.removeEventListener('webglcontextlost', showFallback);
     canvas.removeEventListener('webglcontextrestored', showHead);
