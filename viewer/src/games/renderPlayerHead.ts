@@ -15,6 +15,8 @@ import {
   Vector3,
   WebGLRenderer,
 } from 'three';
+import type { RefObject } from 'react';
+import type { HeadMotion } from './useHeadMotion';
 
 interface HeadAsset {
   surfaces: {
@@ -33,6 +35,7 @@ export async function renderPlayerHead(
   skin: string,
   direction: number,
   signal: AbortSignal,
+  motion: RefObject<HeadMotion | null>,
 ) {
   const path = `/player-heads/${character}/`;
   const response = await fetch(`${path}head.json`, { signal });
@@ -122,6 +125,8 @@ export async function renderPlayerHead(
   let visible = false;
   let contextLost = false;
   let previousTime = performance.now();
+  let tiltYaw = 0;
+  let tiltPitch = 0;
   const draw = (time: number) => {
     const phase = reducedMotion.matches ? 0 : time / 900;
     const idleYaw = direction * (0.22 + Math.sin(phase) * 0.16);
@@ -131,8 +136,12 @@ export async function renderPlayerHead(
     const pitch = MathUtils.lerp(pointerPitch, idlePitch, idleBlend);
     const delta = Math.max(0, time - previousTime) / 1000;
     previousTime = time;
-    pivot.rotation.z = reducedMotion.matches ? idleYaw : MathUtils.damp(pivot.rotation.z, yaw, 10, delta);
-    pivot.rotation.y = reducedMotion.matches ? idlePitch : MathUtils.damp(pivot.rotation.y, pitch, 10, delta);
+    const sample = motion.current;
+    const tilt = sample && time - sample.time < 150 ? sample : null;
+    tiltYaw = reducedMotion.matches ? 0 : MathUtils.damp(tiltYaw, tilt?.yaw ?? 0, 5, delta);
+    tiltPitch = reducedMotion.matches ? 0 : MathUtils.damp(tiltPitch, tilt?.pitch ?? 0, 5, delta);
+    pivot.rotation.z = reducedMotion.matches ? idleYaw : MathUtils.damp(pivot.rotation.z, yaw + tiltYaw, 10, delta);
+    pivot.rotation.y = reducedMotion.matches ? idlePitch : MathUtils.damp(pivot.rotation.y, pitch + tiltPitch, 10, delta);
     renderer.render(scene, camera);
     if (visible && !reducedMotion.matches) frame = requestAnimationFrame(draw);
   };

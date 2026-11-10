@@ -103,3 +103,15 @@
     line-height: 1.25;
   }
 }
+
+.head-motion {
+  display: none;
+}
+
+@media (any-pointer: coarse) and (prefers-reduced-motion: no-preference) {
+  .head-motion {
+    display: block;
+    margin-top: 0.5rem;
+    text-align: center;
+  }
+}

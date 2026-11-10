@@ -2,10 +2,13 @@ import useAxios from 'axios-hooks';
 import { useMemo } from 'react';
 import { TotalData } from './GameTypes';
 import { PlayerHead } from './PlayerHead';
+import { useHeadMotion } from './useHeadMotion';
 import './Totals.css';
 
 export const Totals: React.FC = () => {
   const [{ data, error, loading }] = useAxios<TotalData>('/api/games/totals');
+
+  const { motion, available, status, toggle } = useHeadMotion();
 
   const totalWins = useMemo(
     () => (data?.players || []).reduce((sum, p) => sum + p.wins, 0),
@@ -21,7 +24,7 @@ export const Totals: React.FC = () => {
         <>
           <div className="icons">
             {data.players.map((p, i) => (
-              <PlayerHead key={p.id} name={p.name} model={p.model} icon={p.icon} index={i} />
+              <PlayerHead key={p.id} name={p.name} model={p.model} icon={p.icon} index={i} motion={motion} />
             ))}
           </div>
 
@@ -42,6 +45,14 @@ export const Totals: React.FC = () => {
               ></div>
             ))}
           </div>
+          {available && data.players.some(({ model }) => model) && (
+            <div className="head-motion">
+              <button type="button" onClick={toggle} disabled={status === 'requesting'}>
+                {status === 'on' ? 'Disable tilt' : 'Enable tilt'}
+              </button>
+              {status === 'denied' && <span role="status"> Motion access is unavailable.</span>}
+            </div>
+          )}
         </>
       )}
     </div>
