@@ -1,15 +1,13 @@
-import { useEffect, useRef, type RefObject } from 'react';
-import type { HeadMotion } from './useHeadMotion';
+import { useEffect, useRef } from 'react';
 
 interface PlayerHeadProps {
   name: string;
   model?: string;
   icon?: string;
   index: number;
-  motion: RefObject<HeadMotion | null>;
 }
 
-export function PlayerHead({ name, model, icon, index, motion }: PlayerHeadProps) {
+export function PlayerHead({ name, model, icon, index }: PlayerHeadProps) {
   const canvas = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -23,7 +21,7 @@ export function PlayerHead({ name, model, icon, index, motion }: PlayerHeadProps
     import('./renderPlayerHead')
       .then(async ({ renderPlayerHead }) => {
         dispose = await renderPlayerHead(
-          element, character, skin, index === 1 ? -1 : 1, controller.signal, motion,
+          element, character, skin, index === 1 ? -1 : 1, controller.signal,
         );
       })
       .catch(() => {
@@ -34,7 +32,7 @@ export function PlayerHead({ name, model, icon, index, motion }: PlayerHeadProps
       controller.abort();
       dispose?.();
     };
-  }, [model, index, motion]);
+  }, [model, index]);
 
   return (
     <div className={`player-head icon-${index}`} role="img" aria-label={`${name}'s portrait`}>
