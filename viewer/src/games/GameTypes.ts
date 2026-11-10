@@ -22,6 +22,7 @@ export interface TotalData {
   players: {
     id: number;
     name: string;
+    model?: string;
     icon?: string;
     wins: number;
   }[];

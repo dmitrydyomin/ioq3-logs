@@ -1,6 +1,7 @@
 import useAxios from 'axios-hooks';
 import { useMemo } from 'react';
 import { TotalData } from './GameTypes';
+import { PlayerHead } from './PlayerHead';
 import './Totals.css';
 
 export const Totals: React.FC = () => {
@@ -20,12 +21,7 @@ export const Totals: React.FC = () => {
         <>
           <div className="icons">
             {data.players.map((p, i) => (
-              <img
-                key={p.id}
-                className={`icon-${i}`}
-                src={p.icon}
-                alt={`${p.name}'s icon`}
-              />
+              <PlayerHead key={p.id} name={p.name} model={p.model} icon={p.icon} index={i} />
             ))}
           </div>
 

@@ -214,6 +214,7 @@ export class GameRepository {
         return {
           id: p.id,
           name: p.name,
+          model: p.model,
           icon,
           wins: wins[p.id] || 0,
         };

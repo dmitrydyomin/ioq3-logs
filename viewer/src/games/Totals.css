@@ -12,7 +12,18 @@
   margin-bottom: 0.5rem;
 }
 
-.icon-1 {
+.player-head canvas {
+  display: block;
+  width: 96px;
+  height: 96px;
+}
+
+.player-head canvas[hidden],
+.player-head canvas:not([hidden]) + img {
+  display: none;
+}
+
+.icon-1 img {
   transform: scaleX(-1);
 }
 
